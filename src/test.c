@@ -19,19 +19,9 @@ int main()
     // Data *data = malloc(sizeof(Data));
     // get_data(data);
 
-    float val = 0.731; 
-    float val2 = 0.729; 
-
-
-    float rounded_down = rounded_float(val); 
-
-    float rounded_down2 = rounded_float(val2); 
-
-    if (rounded_down > rounded_down2 )
-    {
-        printf("BONJOUR DONALD \n");
-    }
-    
+  printf("\n ***************** IMPORT PHASE START *****************\n");
+  Data *data = malloc(sizeof(Data));
+  get_data(data, 8);
 
 
 

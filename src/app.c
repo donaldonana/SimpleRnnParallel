@@ -16,7 +16,7 @@ int main()
 
   printf("\n ***************** IMPORT PHASE START *****************\n");
   Data *data = malloc(sizeof(Data));
-  get_data(data);
+  get_data(data, 2);
 
   //  **************** INITIALIZE THE RNN PHASE*****************
   SimpleRNN *rnn = malloc(sizeof(SimpleRNN));

@@ -70,7 +70,6 @@ void testing(SimpleRNN *rnn, int **data, int *datadim, float **embedding_matrix,
 
 }
 
-
 void forward(SimpleRNN *rnn, int *x, int n, float **embedding_matrix){
 
 	initialize_vect_zero(rnn->h[0], rnn->hidden_size);
@@ -93,8 +92,6 @@ void forward(SimpleRNN *rnn, int *x, int n, float **embedding_matrix){
     free(h2);
 	
 }
-
-
 
 void backforward(SimpleRNN *rnn, int n, int idx, int *x, float **embedding_matrix, 
 DerivedSimpleRNN *drnn, dSimpleRNN *grnn)
@@ -284,7 +281,7 @@ void save_rnn_as_json(SimpleRNN *rnn, FILE *fo){
 
 
 
-void get_data(Data *data){
+void get_data(Data *data, int nthread){
 
     float a;
 	int b ;
@@ -301,7 +298,6 @@ void get_data(Data *data){
 	data->embedding = allocate_dynamic_float_matrix(data->eraw, data->ecol);
 	data->X = allocate_dynamic_int_matrix(data->xraw, data->xcol);
 	data->Y = malloc(sizeof(int)*(data->xraw));
-
 	// embeddind matrix
 	if (file != NULL)
     {
@@ -316,7 +312,6 @@ void get_data(Data *data){
 			
 		}
     }
-
 	// X matrix
 	if (fin != NULL)
     {
@@ -333,7 +328,6 @@ void get_data(Data *data){
 		}
 
     }
-
 	// Y vector
     stream = fopen("python/label.txt" , "r");
     if(fscanf(stream, "%d" , &data->xraw)){printf(" yraw : %d \n" , data->xraw);}
@@ -348,11 +342,30 @@ void get_data(Data *data){
   		}
     }
 
+	data->train_size = data->xraw * 0.7 ;
+
+	printf(" Train data from index 1 to index %d  \n " , data->train_size);
+	printf("Test  data from index %d to index %d \n " , (data->train_size+1), data->xraw);
+
+	printf("We have %d mini batch for Train data \n", nthread);
+	int next = -1;
+	int prev = 1;
+	for (int i = 0; i < nthread; i++)
+	{
+		next = (int)(next + 1000/nthread);
+		printf("---->%d mini batch from index %d to %d \n" ,(i+1) , prev , (next+1));
+		prev = next+2;
+	}
+	
+
+
 	fclose(fin);
 	fclose(file);
 	fclose(stream);
 
 
 }
+
+ 
 
 

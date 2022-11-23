@@ -12,9 +12,12 @@ struct Data
 	int xcol;
 	int ecol;
     int eraw;
+	int train_size;
+	int mini_batch_size;
 	int **X;
     int *Y;
     float **embedding;
+
 };
 
 
@@ -90,7 +93,7 @@ void initialize_rnn_derived(SimpleRNN *rnn, DerivedSimpleRNN * drnn);
 
 void save_rnn_as_json(SimpleRNN *rnn, FILE *fichier);
 
-void get_data(Data *data);
+void get_data(Data *data, int nthread);
 
 void gradient_descent(SimpleRNN *rnn, dSimpleRNN *grnn, int n);
 
