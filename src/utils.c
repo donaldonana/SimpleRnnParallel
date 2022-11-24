@@ -57,7 +57,7 @@ void add_vect(float *r , float *a, float *b, int n)
 	int i ;
 	for ( i = 0; i < n; i++)
 	{
-		r[i] = a[i] + b[i] ;
+		r[i] = a[i] + b[i];
 	}
 }
 
@@ -216,20 +216,22 @@ void vect_mult(float **r, float *a , float *b, int n , int m)
 
 void update_matrix(float **r, float **a , float **b, int row, int col, int n)
 {
+	float mean = 1/(float)n ;
 	for (int i = 0; i < row; i++)
 	{
 		for (int j = 0; j < col; j++)
 		{
-			r[i][j] = a[i][j] - (0.01)*b[i][j]*(0.5)*(1/n);
+			r[i][j] = a[i][j] - (0.01)*b[i][j]*(0.5)*mean;
 		}
 	}
 }
 
 void update_vect(float *r, float *a, float *b, int col , int n)
 {
+	float mean = 1/(float)n ;
 	for (int i = 0; i < col; i++)
 	{
-		r[i] = a[i] - (0.01)*b[i]*(0.5)*(1/n) ;
+		r[i] = a[i] - (0.01)*b[i]*(0.5)*mean ;
 	}
 
 }

@@ -19,9 +19,15 @@ int main()
     // Data *data = malloc(sizeof(Data));
     // get_data(data);
 
-  printf("\n ***************** IMPORT PHASE START *****************\n");
-  Data *data = malloc(sizeof(Data));
-  get_data(data, 8);
+//   printf("\n ***************** IMPORT PHASE START *****************\n");
+//   Data *data = malloc(sizeof(Data));
+//   get_data(data, 2);
+
+   int n = 2;
+
+   float mean = 1/(float)n ;
+
+    printf("%f \n", mean);
 
 
 

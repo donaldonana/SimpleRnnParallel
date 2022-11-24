@@ -277,7 +277,7 @@ class MyRnn():
 
 
             
-batches = get_minibatch(X[:4000], Y[:4000] ,1)           
+batches = get_minibatch(X[:1000], Y[:1000] ,2)           
 print("\n TRAINING PHASE IN PROCESS ... ")
 
 myrnn = MyRnn()

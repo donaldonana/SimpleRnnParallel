@@ -72,7 +72,7 @@ struct dSimpleRNN
 	
 };
 
-void training(int epoch, SimpleRNN *rnn, DerivedSimpleRNN *drnn, Data *data, int index) ;
+void training(int epoch, SimpleRNN *rnn, DerivedSimpleRNN *drnn, Data *data, int index, int nthread) ;
 
 void testing(SimpleRNN *rnn, int **data, int *datadim, float **embedding_matrix, int index, int *target);
 

@@ -10,34 +10,52 @@
 
 
 
-void training(int epoch, SimpleRNN *rnn, DerivedSimpleRNN *drnn, Data *data, int index){
+void training(int epoch, SimpleRNN *rnn, DerivedSimpleRNN *drnn, Data *data, int index, 
+int nthread){
 
 	double time;
     clock_t start, end ;
-    float loss , acc , best_lost = 4000.0  ;
-	float *lost_list = malloc(sizeof(float)*epoch);
-	float *acc_list  = malloc(sizeof(float)*epoch);
+    float loss , acc ;
+	float best_lost = 4000.0  ;
+	// float *lost_list = malloc(sizeof(float)*epoch);
+	// float *acc_list  = malloc(sizeof(float)*epoch);
 	dSimpleRNN *grnn = malloc(sizeof(dSimpleRNN));
 	initialize_rnn_gradient(rnn, grnn);
 
     start = clock();
+	// through the epoch
     for (int e = 0; e < epoch ; e++)
     {
         loss = acc = 0.0;
         printf("\nStart of epoch %d/%d \n", (e+1) , epoch);
-        for (int i = 0; i < index; i++)
-        {
-            forward(rnn, data->X[i], data->xcol , data->embedding);
-            backforward(rnn, data->xcol, data->Y[i], data->X[i], data->embedding, drnn, grnn);
-            gradient_descent(rnn, grnn, 1);
-			loss = loss + binary_loss_entropy(data->Y[i], rnn->y);
-            acc = accuracy(acc , data->Y[i], rnn->y);
-        }
-        loss = loss/index;
-        acc = acc/index;
-		lost_list[e] = loss;
-		acc_list[e]  = acc ;
-        printf("--> Loss : %f  accuracy : %f \n" , loss, acc);    
+
+		int next = -1;
+		int prev = 1;
+		int n, k;
+		// through the number of batch or thread
+		for (int i = 0; i < nthread; i++)
+		{
+			next = (int)(next + index/nthread);
+			// printf("---->%d mini batch from index %d to %d \n" ,(i+1) , prev , (next+1));
+			n = 0;
+			for ( k = (prev-1); k < (next+1); k++)
+			{
+				forward(rnn, data->X[k], data->xcol , data->embedding);
+            	backforward(rnn, data->xcol, data->Y[k], data->X[k], data->embedding, drnn, grnn);
+				loss = loss + binary_loss_entropy(data->Y[k], rnn->y);
+            	acc = accuracy(acc , data->Y[k], rnn->y);
+				n = n + 1;
+			}
+			// After one itération over one batch we update the parameters.
+            gradient_descent(rnn, grnn, n);
+			prev = next+2;
+		}
+		// end of learning over all the batch for this epoch
+
+		loss = loss/index;
+		acc = acc/index;
+        
+        printf("--> Loss : %f  accuracy : %f \n" , loss, acc);  
         if (rounded_float(loss) < rounded_float(best_lost))
         {
             best_lost = loss;  
@@ -157,6 +175,17 @@ void gradient_descent(SimpleRNN *rnn, dSimpleRNN *grnn, int n){
 
 }
 
+void zero_rnn_gradient(SimpleRNN *rnn, dSimpleRNN *grnn){
+
+	initialize_vect_zero(grnn->d_bh, rnn->hidden_size);
+	initialize_vect_zero(grnn->d_by, rnn->output_size);
+	initialize_mat_zero(grnn->d_Whh, rnn->hidden_size, rnn->hidden_size);
+	initialize_mat_zero(grnn->d_Whx, rnn->input_size, rnn->hidden_size);
+	initialize_mat_zero(grnn->d_Why, rnn->hidden_size, rnn->output_size);
+
+
+}
+
 
 void dhraw(float *dhraw, float *lasth, float *dh, int n)
 {
@@ -226,16 +255,7 @@ void initialize_rnn_gradient(SimpleRNN *rnn, dSimpleRNN *grnn){
 	zero_rnn_gradient(rnn,grnn);
 
 }
-void zero_rnn_gradient(SimpleRNN *rnn, dSimpleRNN *grnn){
 
-	initialize_vect_zero(grnn->d_bh, rnn->hidden_size);
-	initialize_vect_zero(grnn->d_by, rnn->output_size);
-	initialize_mat_zero(grnn->d_Whh, rnn->hidden_size, rnn->hidden_size);
-	initialize_mat_zero(grnn->d_Whx, rnn->input_size, rnn->hidden_size);
-	initialize_mat_zero(grnn->d_Why, rnn->hidden_size, rnn->output_size);
-
-
-}
 void initialize_rnn_derived(SimpleRNN *rnn, DerivedSimpleRNN * drnn)
 {
 
@@ -347,15 +367,21 @@ void get_data(Data *data, int nthread){
 	printf(" Train data from index 1 to index %d  \n " , data->train_size);
 	printf("Test  data from index %d to index %d \n " , (data->train_size+1), data->xraw);
 
-	printf("We have %d mini batch for Train data \n", nthread);
-	int next = -1;
-	int prev = 1;
-	for (int i = 0; i < nthread; i++)
-	{
-		next = (int)(next + 1000/nthread);
-		printf("---->%d mini batch from index %d to %d \n" ,(i+1) , prev , (next+1));
-		prev = next+2;
-	}
+	// printf("We have %d mini batch for Train data \n", nthread);
+	// int next = -1;
+	// int prev = 1;
+	// for (int i = 0; i < nthread; i++)
+	// {
+	// 	next = (int)(next + 1000/nthread);
+	// 	printf("---->%d mini batch from index %d to %d \n" ,(i+1) , prev , (next+1));
+
+	// 	for (int k = (prev-1); k < (next+1); k++)
+	// 	{
+	// 		printf("%d\n", k);
+	// 	}
+		
+	// 	prev = next+2;
+	// }
 	
 
 
