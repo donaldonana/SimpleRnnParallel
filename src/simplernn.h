@@ -81,7 +81,7 @@ void forward(SimpleRNN *rnn, int *x, int n, float **embedding_matrix);
 void initialize_rnn(SimpleRNN *rnn, int input_size, int hidden_size, int output_size);
 
 void backforward(SimpleRNN *rnn, int n, int idx, int *x, float **embedding_matrix, 
-DerivedSimpleRNN *drnn, dSimpleRNN *grnn);
+DerivedSimpleRNN *drnn);
 
 float accuracy(float acc, float y, float *y_pred);
 

@@ -11,22 +11,42 @@
 struct thread_param {  
 SimpleRNN *rnn;
 DerivedSimpleRNN *drnn;
+int start;
+int end;
 float loss;
-long retour;
 };
+
+Data *data ;
+
 
 struct thread_param threads_params[NUM_THREADS];
 
 void *ThreadTrain (void *params) { // Code du thread
 struct thread_param *mes_param ;
 mes_param = ( struct thread_param *) params ;
-sleep(6) ;
-mes_param->retour = mes_param->retour + mes_param->retour;
-pthread_exit (( void *) mes_param->retour) ;
+for (int i = mes_param->start; i < mes_param->end; i++)
+{
+    forward(mes_param->rnn, data->X[i], data->xcol , data->embedding);
+    backforward(mes_param->rnn, data->xcol, data->Y[i], data->X[i], data->embedding, 
+    mes_param->drnn);
+	mes_param->loss = mes_param->loss + binary_loss_entropy(data->Y[i], mes_param->rnn->y);
+    // acc = accuracy(acc , data->Y[i], rnn->y);
+}
+pthread_exit (NULL) ;
 }
 
 int main()
 {
+    int size = 14000;
+    double time;
+    clock_t start_t, end_t ;
+    data = malloc(sizeof(Data));
+    get_data(data, 2);
+    int n = size/NUM_THREADS;
+    int start , end;
+    start = 0 ; end = n-1 ;
+    float Loss = 0.0 ;
+
 
     int input = 128 , hidden = 64 , output = 2;
     pthread_t threads[NUM_THREADS];
@@ -34,17 +54,21 @@ int main()
     void *status;
     int r;
 
-    printf("----Thread create phase start---- \n");
+    printf("\n----Thread create phase start---- \n");
     /* Initialize and set thread detached attribute */
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+    start_t = clock();
     for ( int i=0; i < NUM_THREADS ; i ++) {
 
         threads_params[i].rnn = malloc(sizeof(SimpleRNN));
         initialize_rnn(threads_params[i].rnn, input, hidden, output);
         threads_params[i].drnn = malloc(sizeof(DerivedSimpleRNN));
         initialize_rnn_derived(threads_params[i].rnn , threads_params[i].drnn);
-        threads_params[i].retour = i;
+        threads_params[i].loss = 0.0;
+        threads_params[i].start = start;
+        threads_params[i].end = end;
+
 
         r = pthread_create (&threads[i] ,&attr ,ThreadTrain ,(void*)&threads_params[i]) ;
         if (r) {
@@ -52,6 +76,9 @@ int main()
             exit(-1);
         }
         printf("Thread %d has starded \n", i);
+
+        start = end + 1;
+        end = end + n;
 
     }
     printf("----Thread create phase end----\n");
@@ -66,12 +93,17 @@ int main()
             printf("ERROR; return code from pthread_join() is %d\n", r);
             exit(-1);
         }
-        printf("Main: completed join with thread %d an return %ld\n",t, threads_params[t].retour);
+        Loss = Loss + threads_params[t].loss ;
+        printf("Main: completed join with thread %d an loss = %f\n",t, (threads_params[t].loss)/n);
     }
+    end_t = clock();
+    time = (double)(end_t - start_t) / CLOCKS_PER_SEC;
+    printf("\nTRAINING PHASE END IN %lf s\n" , time);
 
 
 
 
+    printf("--> Loss : %f  \n" , Loss/size);    
  
     
     return 0 ;

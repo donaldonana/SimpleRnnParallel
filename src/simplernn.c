@@ -28,7 +28,7 @@ void training(int epoch, SimpleRNN *rnn, DerivedSimpleRNN *drnn, Data *data, int
         for (int i = 0; i < index; i++)
         {
             forward(rnn, data->X[i], data->xcol , data->embedding);
-            backforward(rnn, data->xcol, data->Y[i], data->X[i], data->embedding, drnn, grnn);
+            backforward(rnn, data->xcol, data->Y[i], data->X[i], data->embedding, drnn);
             gradient_descent(rnn, grnn, 1);
 			loss = loss + binary_loss_entropy(data->Y[i], rnn->y);
             acc = accuracy(acc , data->Y[i], rnn->y);
@@ -94,7 +94,7 @@ void forward(SimpleRNN *rnn, int *x, int n, float **embedding_matrix){
 }
 
 void backforward(SimpleRNN *rnn, int n, int idx, int *x, float **embedding_matrix, 
-DerivedSimpleRNN *drnn, dSimpleRNN *grnn)
+DerivedSimpleRNN *drnn)
 {
 
 	// dy = y_pred - label
@@ -136,11 +136,11 @@ DerivedSimpleRNN *drnn, dSimpleRNN *grnn)
 	}
 
 	// Parameters Update  with SGD  o = o - lr*do
-	 add_matrix(grnn->d_Whx, grnn->d_Whx, drnn->dWhx, rnn->input_size, rnn->hidden_size);
-	 add_matrix(grnn->d_Whh, grnn->d_Whh, drnn->dWhh, rnn->hidden_size, rnn->hidden_size);
-	 add_matrix(grnn->d_Why, grnn->d_Why, drnn->dWhy, rnn->hidden_size, rnn->output_size);
-	 add_vect(grnn->d_bh, grnn->d_bh, drnn->dbh, rnn->hidden_size);
-	 add_vect(grnn->d_by, grnn->d_by, drnn->dby, rnn->output_size);
+	//  add_matrix(grnn->d_Whx, grnn->d_Whx, drnn->dWhx, rnn->input_size, rnn->hidden_size);
+	//  add_matrix(grnn->d_Whh, grnn->d_Whh, drnn->dWhh, rnn->hidden_size, rnn->hidden_size);
+	//  add_matrix(grnn->d_Why, grnn->d_Why, drnn->dWhy, rnn->hidden_size, rnn->output_size);
+	//  add_vect(grnn->d_bh, grnn->d_bh, drnn->dbh, rnn->hidden_size);
+	//  add_vect(grnn->d_by, grnn->d_by, drnn->dby, rnn->output_size);
 
 	 
 }
@@ -344,18 +344,18 @@ void get_data(Data *data, int nthread){
 
 	data->train_size = data->xraw * 0.7 ;
 
-	printf(" Train data from index 1 to index %d  \n " , data->train_size);
-	printf("Test  data from index %d to index %d \n " , (data->train_size+1), data->xraw);
+	// printf(" Train data from index 1 to index %d  \n " , data->train_size);
+	// printf("Test  data from index %d to index %d \n " , (data->train_size+1), data->xraw);
 
-	printf("We have %d mini batch for Train data \n", nthread);
-	int next = -1;
-	int prev = 1;
-	for (int i = 0; i < nthread; i++)
-	{
-		next = (int)(next + 1000/nthread);
-		printf("---->%d mini batch from index %d to %d \n" ,(i+1) , prev , (next+1));
-		prev = next+2;
-	}
+	// printf("We have %d mini batch for Train data \n", nthread);
+	// int next = -1;
+	// int prev = 1;
+	// for (int i = 0; i < nthread; i++)
+	// {
+	// 	next = (int)(next + 1000/nthread);
+	// 	printf("---->%d mini batch from index %d to %d \n" ,(i+1) , prev , (next+1));
+	// 	prev = next+2;
+	// }
 	
 
 
