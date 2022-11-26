@@ -6,7 +6,10 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
-# define NUM_THREADS 4
+#include <sys/time.h>
+# define NUM_THREADS 2
+
+struct timeval start_t , end_t ;
 
 struct thread_param {  
 SimpleRNN *rnn;
@@ -37,15 +40,17 @@ pthread_exit (NULL) ;
 
 int main()
 {
-    int size = 14000;
-    double time;
-    clock_t start_t, end_t ;
+    // srand(time(NULL));
+
+
+    int size = 4000;
+    double totaltime;
+    // clock_t start_t, end_t ;
     data = malloc(sizeof(Data));
     get_data(data, 2);
     int n = size/NUM_THREADS;
     int start , end;
     start = 0 ; end = n-1 ;
-    float Loss = 0.0 ;
 
 
     int input = 128 , hidden = 64 , output = 2;
@@ -58,7 +63,16 @@ int main()
     /* Initialize and set thread detached attribute */
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-    start_t = clock();
+    // start_t = clock();
+    gettimeofday(&start_t, NULL);
+    printf("\n %d \n", n);
+
+    for (int i = 0; i < 3; i++)
+    {
+
+    float Loss = 0.0 ;
+    printf("\n epoch %d \n", (i+1));
+        
     for ( int i=0; i < NUM_THREADS ; i ++) {
 
         threads_params[i].rnn = malloc(sizeof(SimpleRNN));
@@ -96,15 +110,16 @@ int main()
         Loss = Loss + threads_params[t].loss ;
         printf("Main: completed join with thread %d an loss = %f\n",t, (threads_params[t].loss)/n);
     }
-    end_t = clock();
-    time = (double)(end_t - start_t) / CLOCKS_PER_SEC;
-    printf("\nTRAINING PHASE END IN %lf s\n" , time);
-
-
-
-
+    
     printf("--> Loss : %f  \n" , Loss/size);    
  
+        
+    }
+
+    gettimeofday(&end_t, NULL);
+    totaltime = (((end_t.tv_usec - start_t.tv_usec) / 1.0e6 + end_t.tv_sec - start_t.tv_sec) * 1000) / 1000;
+    printf("\nTRAINING PHASE END IN %lf s\n" , totaltime);
+    
     
     return 0 ;
 }
